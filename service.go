@@ -60,6 +60,8 @@ type Service struct {
 	accessCache      *accessValidatorCache
 	controlDialer    N.Dialer
 	tunnelDialer     N.Dialer
+	controlResolver  Resolver
+	tunnelResolver   Resolver
 
 	connectionAccess sync.Mutex
 	connections      []io.Closer
@@ -198,6 +200,8 @@ func NewService(options ServiceOptions) (*Service, error) {
 		accessCache:       &accessValidatorCache{values: make(map[string]accessValidator), dialer: controlDialer},
 		controlDialer:     controlDialer,
 		tunnelDialer:      tunnelDialer,
+		controlResolver:   options.ControlResolver,
+		tunnelResolver:    options.TunnelResolver,
 		datagramV2Muxers:  make(map[protocol.DatagramSender]*datagram.DatagramV2Muxer),
 		datagramV3Muxers:  make(map[protocol.DatagramSender]*datagram.DatagramV3Muxer),
 		datagramV3Manager: datagram.NewDatagramV3SessionManager(),
@@ -211,7 +215,7 @@ func NewService(options ServiceOptions) (*Service, error) {
 func (s *Service) Start() error {
 	s.logger.Info("starting Cloudflare Tunnel with ", s.haConnections, " HA connections")
 
-	regions, err := discoverEdge(s.ctx, s.region, s.controlDialer)
+	regions, err := discoverEdge(s.ctx, s.region, s.controlDialer, s.controlResolver, s.tunnelResolver)
 	if err != nil {
 		return E.Cause(err, "discover edge")
 	}

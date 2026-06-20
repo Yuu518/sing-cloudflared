@@ -194,7 +194,7 @@ func withFakeQUICEdgeDiscovery(t *testing.T, edge *fakeQUICEdge) {
 	}
 
 	edgeAddr := edge.listener.Addr().(*net.UDPAddr)
-	discoverEdge = func(ctx context.Context, region string, controlDialer N.Dialer) ([][]*EdgeAddr, error) {
+	discoverEdge = func(ctx context.Context, region string, controlDialer N.Dialer, controlResolver Resolver, tunnelResolver Resolver) ([][]*EdgeAddr, error) {
 		return [][]*EdgeAddr{{
 			{
 				TCP:       &net.TCPAddr{IP: edgeAddr.IP, Port: edgeAddr.Port},

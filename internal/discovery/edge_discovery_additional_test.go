@@ -210,7 +210,7 @@ func TestDiscoverEdgeFallsBackToDoT(t *testing.T) {
 		return expected, nil
 	}
 
-	regions, err := DiscoverEdge(context.Background(), "us", N.SystemDialer)
+	regions, err := DiscoverEdge(context.Background(), "us", N.SystemDialer, nil, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -312,7 +312,7 @@ func TestDiscoverEdgeReturnsFallbackError(t *testing.T) {
 		return nil, errors.New("dot failed")
 	}
 
-	_, err := DiscoverEdge(context.Background(), "", N.SystemDialer)
+	_, err := DiscoverEdge(context.Background(), "", N.SystemDialer, nil, nil)
 	if err == nil || err.Error() != "edge discovery: dot failed" {
 		t.Fatalf("unexpected error %v", err)
 	}
@@ -325,7 +325,7 @@ func TestDiscoverEdgeRejectsEmptyRegions(t *testing.T) {
 		return nil, nil
 	}
 
-	_, err := DiscoverEdge(context.Background(), "", N.SystemDialer)
+	_, err := DiscoverEdge(context.Background(), "", N.SystemDialer, nil, nil)
 	if err == nil || err.Error() != "edge discovery: no edge addresses found" {
 		t.Fatalf("unexpected error %v", err)
 	}

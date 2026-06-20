@@ -10,7 +10,7 @@ import (
 
 func TestDiscoverEdge(t *testing.T) {
 	t.Parallel()
-	regions, err := DiscoverEdge(context.Background(), "", N.SystemDialer)
+	regions, err := DiscoverEdge(context.Background(), "", N.SystemDialer, nil, nil)
 	if err != nil {
 		t.Fatal("DiscoverEdge: ", err)
 	}

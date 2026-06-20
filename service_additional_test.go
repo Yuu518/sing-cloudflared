@@ -34,7 +34,7 @@ func TestServiceStartCapsHAConnectionsAndStopsCleanly(t *testing.T) {
 		serveQUICConnection = originalServeQUICConnection
 	}()
 
-	discoverEdge = func(ctx context.Context, region string, controlDialer N.Dialer) ([][]*EdgeAddr, error) {
+	discoverEdge = func(ctx context.Context, region string, controlDialer N.Dialer, controlResolver Resolver, tunnelResolver Resolver) ([][]*EdgeAddr, error) {
 		return [][]*EdgeAddr{{
 			{TCP: &net.TCPAddr{IP: net.IPv4(127, 0, 0, 1), Port: 7844}, UDP: &net.UDPAddr{IP: net.IPv4(127, 0, 0, 1), Port: 7844}, IPVersion: 4},
 			{TCP: &net.TCPAddr{IP: net.IPv4(127, 0, 0, 2), Port: 7844}, UDP: &net.UDPAddr{IP: net.IPv4(127, 0, 0, 2), Port: 7844}, IPVersion: 4},
@@ -88,7 +88,7 @@ func TestServiceStartReturnsErrorWhenNoEdgesDiscovered(t *testing.T) {
 	defer func() {
 		discoverEdge = originalDiscoverEdge
 	}()
-	discoverEdge = func(ctx context.Context, region string, controlDialer N.Dialer) ([][]*EdgeAddr, error) {
+	discoverEdge = func(ctx context.Context, region string, controlDialer N.Dialer, controlResolver Resolver, tunnelResolver Resolver) ([][]*EdgeAddr, error) {
 		return nil, nil
 	}
 

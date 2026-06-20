@@ -13,6 +13,8 @@ type ServiceOptions struct {
 	ConnectionDialer N.Dialer
 	ControlDialer    N.Dialer
 	TunnelDialer     N.Dialer
+	ControlResolver  Resolver
+	TunnelResolver   Resolver
 	ICMPHandler      ICMPHandler
 	ConnContext      func(context.Context) context.Context
 	Token            string
