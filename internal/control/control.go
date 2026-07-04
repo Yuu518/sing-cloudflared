@@ -20,7 +20,7 @@ const (
 	RPCTimeout = 5 * time.Second
 )
 
-var ClientVersion = "sing-cloudflared"
+var ClientVersion = "2026.7.3"
 
 var ErrNonRemoteManagedTunnelUnsupported = E.New("cloudflared only supports remote-managed tunnels")
 
