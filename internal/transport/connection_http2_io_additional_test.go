@@ -2,7 +2,9 @@ package transport
 
 import (
 	"bytes"
+	"errors"
 	"io"
+	"net"
 	"net/http"
 	"testing"
 
@@ -92,6 +94,14 @@ func TestHTTP2FlushWriterFlushesAndTrailers(t *testing.T) {
 	}
 	if writer.flushCount != 1 || string(writer.body) != "body" {
 		t.Fatalf("unexpected flush writer state %#v", writer)
+	}
+	err = flushWriter.CloseWrapper()
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = flushWriter.Write([]byte("closed"))
+	if !errors.Is(err, net.ErrClosed) {
+		t.Fatalf("expected net.ErrClosed, got %v", err)
 	}
 
 	responseWriter := &HTTP2ResponseWriter{

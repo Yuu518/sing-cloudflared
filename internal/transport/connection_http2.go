@@ -7,7 +7,6 @@ import (
 	"math"
 	"net"
 	"net/http"
-	"runtime/debug"
 	"strconv"
 	"strings"
 	"sync"
@@ -183,7 +182,9 @@ func (c *HTTP2Connection) handleControlStream(ctx context.Context, r *http.Reque
 	w.WriteHeader(http.StatusOK)
 	flusher.Flush()
 
-	stream := NewHTTP2Stream(r.Body, &HTTP2FlushWriter{w: w, flusher: flusher})
+	flushWriter := &HTTP2FlushWriter{w: w, flusher: flusher}
+	defer flushWriter.CloseWrapper()
+	stream := NewHTTP2Stream(r.Body, flushWriter)
 
 	c.registrationClient = control.NewRegistrationClient(ctx, stream)
 
@@ -397,14 +398,28 @@ func (s *HTTP2Stream) Close() error                { return s.reader.Close() }
 type HTTP2FlushWriter struct {
 	w       http.ResponseWriter
 	flusher http.Flusher
+	access  sync.Mutex
+	closed  bool
 }
 
 func (w *HTTP2FlushWriter) Write(p []byte) (int, error) {
+	w.access.Lock()
+	defer w.access.Unlock()
+	if w.closed {
+		return 0, net.ErrClosed
+	}
 	n, err := w.w.Write(p)
 	if err == nil {
 		w.flusher.Flush()
 	}
 	return n, err
+}
+
+func (w *HTTP2FlushWriter) CloseWrapper() error {
+	w.access.Lock()
+	w.closed = true
+	w.access.Unlock()
+	return nil
 }
 
 type HTTP2DataStream struct {
@@ -420,15 +435,6 @@ func (s *HTTP2DataStream) Read(p []byte) (int, error) {
 }
 
 func (s *HTTP2DataStream) Write(p []byte) (n int, err error) {
-	defer func() {
-		if recovered := recover(); recovered != nil {
-			if s.logger != nil {
-				s.logger.Debug("recovered from HTTP/2 data stream panic: ", recovered, "\n", string(debug.Stack()))
-			}
-			n = 0
-			err = io.ErrClosedPipe
-		}
-	}()
 	n, err = s.writer.Write(p)
 	if err == nil && s.state != nil && s.state.shouldFlush {
 		s.flusher.Flush()

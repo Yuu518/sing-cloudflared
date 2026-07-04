@@ -2,7 +2,6 @@ package transport
 
 import (
 	"bytes"
-	"io"
 	"net/http"
 	"strconv"
 	"strings"
@@ -172,22 +171,6 @@ func TestHTTP2StreamingResponsesFlush(t *testing.T) {
 				t.Fatalf("expected body flush for streaming response, got %d flushes", writer.flushCount)
 			}
 		})
-	}
-}
-
-func TestHTTP2DataStreamWriteRecoversPanic(t *testing.T) {
-	t.Parallel()
-	writer := &captureHTTP2Writer{panicWrite: true}
-	stream := &HTTP2DataStream{
-		writer:  writer,
-		flusher: writer,
-		state:   &HTTP2FlushState{shouldFlush: true},
-		logger:  logger.NOP(),
-	}
-
-	_, err := stream.Write([]byte("panic"))
-	if err != io.ErrClosedPipe {
-		t.Fatalf("expected io.ErrClosedPipe, got %v", err)
 	}
 }
 
